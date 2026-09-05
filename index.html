@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>મિલકત ટ્રાન્સફર ફી કેલ્ક્યુલેટર - ગુજરાત સરકાર</title>
+    <!-- Tailwind CSS ફોર પ્રીમિયમ લુક -->
+    <script src="https://tailwindcss.com"></script>
+    <link href="https://googleapis.com" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans Gujarati', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col justify-between">
+
+    <!-- હેડર વિભાગ -->
+    <header class="bg-emerald-700 text-white shadow-md p-4 sticky top-0 z-50">
+        <div class="container mx-auto text-center">
+            <h2 class="text-sm font-semibold tracking-wider text-emerald-200">ગુજરાત સરકાર</h2>
+            <h1 class="text-xl md:text-2xl font-bold mt-1">શહેરી વિકાસ અને શહેરી ગૃહ નિર્માણ વિભાગ</h1>
+            <p class="text-xs md:text-sm text-emerald-100 mt-1">પરિપત્ર ક્રમાંક: UDUHD/mur/e-file/18/2023/7013/M Section</p>
+        </div>
+    </header>
+
+    <!-- મુખ્ય કન્ટેન્ટ -->
+    <main class="container mx-auto max-w-lg p-4 my-6">
+        <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+            <h3 class="text-lg font-bold text-center text-gray-700 border-b pb-3 mb-6">
+                🏠 મિલકત ટ્રાન્સફર ફી ગણતરી સિસ્ટમ
+            </h3>
+
+            <!-- મિલકતનો પ્રકાર સેલેક્ટ કરવો -->
+            <div class="mb-5">
+                <label class="block text-sm font-bold text-gray-600 mb-2">૧. મિલકતનો પ્રકાર પસંદ કરો:</label>
+                <select id="propertyType" onchange="toggleMarketValueInput()" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all">
+                    <option value="residential">રહેણાંક / ખુલ્લો પ્લોટ</option>
+                    <option value="commercial">બિન-રહેણાંક (Commercial)</option>
+                    <option value="inheritance">વારસાઈ / વીલ (Inheritance / Will)</option>
+                </select>
+            </div>
+
+            <!-- જંત્રી કિંમત એન્ટર કરવી -->
+            <div id="marketValueContainer" class="mb-6 transition-all duration-300">
+                <label class="block text-sm font-bold text-gray-600 mb-2">૨. મિલકતની રજીસ્ટ્રેશન/જંત્રી કિંમત (રૂપિયામાં):</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 font-bold">₹</span>
+                    <input type="number" id="marketValue" min="0" placeholder="દા.ત. 500000" oninput="calculateFee()" class="w-full p-3 pl-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all">
+                </div>
+            </div>
+
+            <!-- પરિણામ દર્શાવવું -->
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center mt-6">
+                <p class="text-sm text-emerald-800 font-medium">ચૂકવવાપાત્ર અંદાજિત ફી</p>
+                <div class="text-3xl font-extrabold text-emerald-700 my-1" id="totalFeeDisplay">₹ ૧,૦૦૦</div>
+                <p class="text-xs text-gray-500 mt-2" id="ruleNote">
+                    નિયમ: મિલકતની કિંમતના ૦.૧% અથવા રૂ. ૧,૦૦૦ (બેમાંથી જે વધારે હોય તે).
+                </p>
+            </div>
+
+            <!-- મહત્વની સૂચના -->
+            <div class="mt-6 text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                📌 <strong>નોંધ:</strong> આ ગણતરી ૨૪-૦૮-૨૦૨૩ ના સરકારી ઠરાવના સત્તાવાર નિયમો પર આધારિત છે જે તમામ નગરપાલિકાઓ માટે એકસમાન લાગુ પડે છે.
+            </div>
+        </div>
+    </main>
+
+    <!-- ફૂટર વિભાગ -->
+    <footer class="bg-gray-800 text-gray-400 text-center py-4 text-xs mt-auto">
+        <p>© ૨૦૨૬ શહેરી વિકાસ વિભાગ, ગુજરાત રાજ્ય. તમામ હકો અનામત છે.</p>
+    </footer>
+
+    <!-- ગણતરી માટેની JavaScript લોજિક -->
+    <script>
+        function toggleMarketValueInput() {
+            const type = document.getElementById('propertyType').value;
+            const container = document.getElementById('marketValueContainer');
+            const marketValueInput = document.getElementById('marketValue');
+            
+            if (type === 'inheritance') {
+                container.style.opacity = '0.5';
+                marketValueInput.disabled = true;
+                marketValueInput.value = '';
+            } else {
+                container.style.opacity = '1';
+                marketValueInput.disabled = false;
+            }
+            calculateFee();
+        }
+
+        function calculateFee() {
+            const type = document.getElementById('propertyType').value;
+            const valueInput = document.getElementById('marketValue').value;
+            const marketValue = parseFloat(valueInput) || 0;
+            
+            let finalFee = 0;
+            let noteText = "";
+
+            if (type === 'residential') {
+                // રહેણાંક: 0.1% અથવા મિનિમમ 1000
+                const calculated = marketValue * 0.001;
+                finalFee = Math.max(calculated, 1000);
+                // જો કિંમત શૂન્ય કે ખાલી હોય તો મિનિમમ જ બતાવો
+                if (marketValue === 0) finalFee = 1000;
+                noteText = "નિયમ: મિલકતની કિંમતના ૦.૧% અથવા રૂ. ૧,૦૦૦ (બેમાંથી જે વધારે હોય તે).";
+            } 
+            else if (type === 'commercial') {
+                // બિન-રહેણાંક: 0.2% અથવા મિનિમમ 2000
+                const calculated = marketValue * 0.002;
+                finalFee = Math.max(calculated, 2000);
+                if (marketValue === 0) finalFee = 2000;
+                noteText = "નિયમ: મિલકતની કિંમતના ૦.૨% અથવા રૂ. ૨,૦૦૦ (બેમાંથી જે વધારે હોય તે).";
+            } 
+            else if (type === 'inheritance') {
+                // વારસાઈ: મફત
+                finalFee = 0;
+                noteText = "નિયમ: વારસાઈ/વીલના કેસ માટે કોઈ ફી લેવાની થતી નથી.";
+            }
+
+            // ગુજરાતી અંક ફોર્મેટિંગ સાથે આઉટપુટ અપડેટ કરો
+            document.getElementById('totalFeeDisplay').innerText = "₹ " + finalFee.toLocaleString('en-IN');
+            document.getElementById('ruleNote').innerText = noteText;
+        }
+        
+        // પેજ લોડ વખતે પહેલી ગણતરી રન કરવા માટે
+        window.onload = calculateFee;
+    </script>
+</body>
+</html>
